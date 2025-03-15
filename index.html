@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFT Battle Game</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>NFT Battle Game</h1>
+    <button id="connectWallet">Conectar Wallet</button>
+    <button id="claimNFT" disabled>Reclamar NFT Gratuito</button>
+    <p id="status">Conéctate para jugar</p>
+
+    <script>
+        let provider;
+        let signer;
+        let userAddress;
+        const contractAddress = "TU_CONTRATO_AQUI"; // Reemplaza con la dirección del contrato
+        const abi = [ /* ABI del contrato NFT */ ];
+        
+        document.getElementById("connectWallet").addEventListener("click", async () => {
+            if (window.ethereum) {
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+                document.getElementById("status").innerText = "Conectado: " + userAddress;
+                document.getElementById("claimNFT").disabled = false;
+            } else {
+                alert("Por favor, instala MetaMask.");
+            }
+        });
+
+        document.getElementById("claimNFT").addEventListener("click", async () => {
+            const contract = new ethers.Contract(contractAddress, abi, signer);
+            try {
+                let tx = await contract.claimFreeNFT(); // Llama a la función para reclamar el NFT
+                document.getElementById("status").innerText = "Reclamando NFT...";
+                await tx.wait();
+                document.getElementById("status").innerText = "NFT reclamado con éxito.";
+            } catch (error) {
+                console.error(error);
+                document.getElementById("status").innerText = "Error al reclamar el NFT.";
+            }
+        });
+    </script>
+</body>
+</html>
