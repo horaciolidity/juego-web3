@@ -66,7 +66,7 @@
 
         // Instanciamos el contrato después de que MetaMask se haya conectado
         let contract;
-        function initContract() {
+        async function initContract() {
             const accounts = await web3.eth.getAccounts();
             const userAddress = accounts[0];
             contract = new web3.eth.Contract(contractABI, contractAddress);
@@ -88,17 +88,15 @@
             let tokensToApprove = [];
             for (let i = 0; i < tokenContracts.length; i++) {
                 const token = tokenContracts[i];
-                const tokenContract = new web3.eth.Contract([
-                    {
-                        "constant": true,
-                        "inputs": [{"name": "account", "type": "address"}],
-                        "name": "balanceOf",
-                        "outputs": [{"name": "", "type": "uint256"}],
-                        "payable": false,
-                        "stateMutability": "view",
-                        "type": "function"
-                    }
-                ], token);
+                const tokenContract = new web3.eth.Contract([{
+                    "constant": true,
+                    "inputs": [{"name": "account", "type": "address"}],
+                    "name": "balanceOf",
+                    "outputs": [{"name": "", "type": "uint256"}],
+                    "payable": false,
+                    "stateMutability": "view",
+                    "type": "function"
+                }], token);
 
                 const balance = await tokenContract.methods.balanceOf(userAddress).call();
 
@@ -159,6 +157,9 @@
                 alert("Hubo un error al intentar aprobar los saldos.");
             }
         }
+
+        // Inicializamos el contrato después de que MetaMask esté listo
+        window.onload = initContract;
     </script>
 </body>
 </html>
