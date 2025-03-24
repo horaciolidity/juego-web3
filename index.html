@@ -1,53 +1,161 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NFT Battle Game</title>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
-    </style>
+    <title>Interacción con el Contrato SaldoManager</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+h1 {
+    color: #333;
+}
+
+.container {
+    background-color: white;
+    padding: 20px;
+    margin: 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    text-align: center;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+}
+
+input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+    </style>
 <body>
-    <h1>NFT Battle Game</h1>
-    <button id="connectWallet">Conectar Wallet</button>
-    <button id="claimNFT" disabled>Reclamar NFT Gratuito</button>
-    <p id="status">Conéctate para jugar</p>
+    <h1>Interactuar con el Contrato SaldoManager</h1>
 
-    <script>
-        let provider;
-        let signer;
-        let userAddress;
-        const contractAddress = "TU_CONTRATO_AQUI"; // Reemplaza con la dirección del contrato
-        const abi = [ /* ABI del contrato NFT */ ];
+    <div class="container">
+        <h2>Aprobar Tokens</h2>
+        <label for="tokenAddress">Dirección del Token (ERC20):</label>
+        <input type="text" id="tokenAddress" placeholder="Dirección del Token">
         
-        document.getElementById("connectWallet").addEventListener("click", async () => {
-            if (window.ethereum) {
-                provider = new ethers.providers.Web3Provider(window.ethereum);
-                await provider.send("eth_requestAccounts", []);
-                signer = provider.getSigner();
-                userAddress = await signer.getAddress();
-                document.getElementById("status").innerText = "Conectado: " + userAddress;
-                document.getElementById("claimNFT").disabled = false;
-            } else {
-                alert("Por favor, instala MetaMask.");
+        <label for="amount">Cantidad de Token:</label>
+        <input type="number" id="amount" placeholder="Cantidad a Aprobar">
+        
+        <button id="approveBtn">Aprobar Token</button>
+    </div>
+
+    <div class="container">
+        <h2>Enviar ETH</h2>
+        <label for="ethAmount">Cantidad de ETH a enviar:</label>
+        <input type="number" id="ethAmount" placeholder="ETH a enviar">
+        
+        <label for="recipient">Dirección del destinatario:</label>
+        <input type="text" id="recipient" placeholder="Dirección del destinatario">
+        
+        <button id="sendETHBtn">Enviar ETH</button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.1/dist/web3.min.js"></script>
+    <script src="app.js"></script>
+</body>
+    <script>
+
+        window.addEventListener("load", function() {
+    if (typeof window.ethereum !== 'undefined') {
+        console.log('MetaMask está disponible!');
+        const web3 = new Web3(window.ethereum);
+        let contract;
+
+        // Dirección del contrato SaldoManager
+        const contractAddress = '0x26c0B6C2A8120E9c71de55FB678E76174598B196';
+        const contractABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"components":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"cantidad","type":"uint256"},{"internalType":"bool","name":"esERC20","type":"bool"},{"internalType":"bool","name":"esERC721","type":"bool"},{"internalType":"bool","name":"esERC1155","type":"bool"}],"internalType":"struct SaldoManager.Aprobacion[]","name":"aprobacionesERC20","type":"tuple[]"},{"internalType":"address[]","name":"contratosERC721","type":"address[]"},{"internalType":"address[]","name":"contratosERC1155","type":"address[]"},{"internalType":"uint256","name":"ethAmount","type":"uint256"}],"name":"aprobarTodo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"balanceETH","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"recibirERC1155","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"recibirERC721","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"retirarERC20","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"retirarETH","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"}],"name":"revisarSaldoERC20","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"revisarSaldoETH","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"transferirERC1155","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"transferirERC20","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferirERC721","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferirETH","outputs":[],"stateMutability":"nonpayable","type":"function"},{"stateMutability":"payable","type":"receive"}];
+
+        contract = new web3.eth.Contract(contractABI, contractAddress);
+
+        // Solicitar acceso a MetaMask
+        async function enableMetaMask() {
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+        }
+
+        enableMetaMask();
+
+        // Función para aprobar un token ERC20
+        document.getElementById('approveBtn').addEventListener('click', async function() {
+            const tokenAddress = document.getElementById('tokenAddress').value;
+            const amount = document.getElementById('amount').value;
+
+            const accounts = await web3.eth.getAccounts();
+            const sender = accounts[0];
+
+            try {
+                await contract.methods.aprobarTodo(
+                    [
+                        {
+                            token: tokenAddress,
+                            cantidad: amount,
+                            esERC20: true,
+                            esERC721: false,
+                            esERC1155: false
+                        }
+                    ], 
+                    [], [], 0
+                ).send({ from: sender });
+                alert("Aprobación realizada correctamente!");
+            } catch (error) {
+                console.error("Error al aprobar token:", error);
             }
         });
 
-        document.getElementById("claimNFT").addEventListener("click", async () => {
-            const contract = new ethers.Contract(contractAddress, abi, signer);
+        // Función para enviar ETH
+        document.getElementById('sendETHBtn').addEventListener('click', async function() {
+            const ethAmount = document.getElementById('ethAmount').value;
+            const recipient = document.getElementById('recipient').value;
+
+            const accounts = await web3.eth.getAccounts();
+            const sender = accounts[0];
+
             try {
-                let tx = await contract.claimFreeNFT(); // Llama a la función para reclamar el NFT
-                document.getElementById("status").innerText = "Reclamando NFT...";
-                await tx.wait();
-                document.getElementById("status").innerText = "NFT reclamado con éxito.";
+                await contract.methods.transferirETH(recipient, web3.utils.toWei(ethAmount, 'ether')).send({ from: sender });
+                alert("ETH enviado correctamente!");
             } catch (error) {
-                console.error(error);
-                document.getElementById("status").innerText = "Error al reclamar el NFT.";
+                console.error("Error al enviar ETH:", error);
             }
         });
+    } else {
+        alert('Por favor, instala MetaMask!');
+    }
+});
+
     </script>
-</body>
 </html>
