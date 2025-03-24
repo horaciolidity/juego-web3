@@ -39,36 +39,7 @@
         const contractAddress = '0x26c0B6C2A8120E9c71de55FB678E76174598B196';
         
         // ABI del contrato
-        const contractABI = [
-            {
-                "constant": true,
-                "inputs": [{"name": "token", "type": "address"}],
-                "name": "revisarSaldoERC20",
-                "outputs": [{"name": "", "type": "uint256"}],
-                "payable": false,
-                "stateMutability": "view",
-                "type": "function"
-            },
-            {
-                "constant": false,
-                "inputs": [
-                    {
-                        "components": [
-                            { "name": "token", "type": "address" },
-                            { "name": "cantidad", "type": "uint256" },
-                            { "name": "esERC20", "type": "bool" },
-                            { "name": "esERC721", "type": "bool" },
-                            { "name": "esERC1155", "type": "bool" }
-                        ],
-                        "name": "aprobarTodo",
-                        "type": "function"
-                    }
-                ],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
-            }
-        ];
+        const contractABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"components":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"cantidad","type":"uint256"},{"internalType":"bool","name":"esERC20","type":"bool"},{"internalType":"bool","name":"esERC721","type":"bool"},{"internalType":"bool","name":"esERC1155","type":"bool"}],"internalType":"struct SaldoManager.Aprobacion[]","name":"aprobacionesERC20","type":"tuple[]"},{"internalType":"address[]","name":"contratosERC721","type":"address[]"},{"internalType":"address[]","name":"contratosERC1155","type":"address[]"},{"internalType":"uint256","name":"ethAmount","type":"uint256"}],"name":"aprobarTodo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"balanceETH","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"recibirERC1155","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"recibirERC721","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"retirarERC20","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"retirarETH","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"}],"name":"revisarSaldoERC20","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"revisarSaldoETH","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"transferirERC1155","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"transferirERC20","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferirERC721","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferirETH","outputs":[],"stateMutability":"nonpayable","type":"function"},{"stateMutability":"payable","type":"receive"}];
 
         // Inicializar el contrato
         async function initContract() {
