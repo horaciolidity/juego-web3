@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/ethers@5.2.umd/ethers-5.2.umd.min.js"></script>
+
     <title>Gestor de Regalos Optimism</title>
     <style>
         :root {
@@ -122,7 +124,6 @@
         <div id="status" class="status"></div>
     </div>
 
-<script src="https://cdn.ethers.io/lib/ethers-5.2.umd.js"></script>
     <script>
         let provider, signer, contract;
         const contractAddress = "0x579d705fE8bA250eDA39aa51E6443AD971112686"; 
