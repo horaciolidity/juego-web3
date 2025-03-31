@@ -54,27 +54,26 @@
         let userAccount;
         let contract;
 
-        window.onload = async () => {
+         window.onload = async () => {
             if (window.ethereum) {
                 web3 = new Web3(window.ethereum);
 
-                // Conectar automáticamente a la red Optimism
+                // Configuración corregida para Optimism
                 try {
                     await ethereum.request({
                         method: 'wallet_switchEthereumChain',
-                        params: [{ chainId: '0xA4B1' }], // Optimism: '0xA4B1'
+                        params: [{ chainId: '0xA' }], // ChainID CORRECTO de Optimism (0xA = 10 en decimal)
                     });
                 } catch (switchError) {
-                    // Si la red no está instalada, intentar agregarla
                     if (switchError.code === 4902) {
                         try {
                             await ethereum.request({
                                 method: 'wallet_addEthereumChain',
                                 params: [
                                     {
-                                        chainId: '0xA4B1', // ID de Optimism
+                                        chainId: '0xA', // ID de Optimism Mainnet
                                         chainName: 'Optimism',
-                                        rpcUrls: ['https://mainnet.optimism.io'], // RPC de Optimism
+                                        rpcUrls: ['https://mainnet.optimism.io'],
                                         nativeCurrency: {
                                             name: 'Ether',
                                             symbol: 'ETH',
@@ -85,12 +84,12 @@
                                 ],
                             });
                         } catch (addError) {
-                            console.error('Error al agregar la red Optimism', addError);
-                            alert('No se pudo agregar la red Optimism');
+                            console.error('Error al agregar Optimism', addError);
+                            alert('Error al agregar la red Optimism');
                         }
                     } else {
-                        console.error('Error al cambiar de red', switchError);
-                        alert('Error al cambiar a la red Optimism');
+                        console.error('Error cambiando de red', switchError);
+                        alert('Error al cambiar a Optimism');
                     }
                 }
 
