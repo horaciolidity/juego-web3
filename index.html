@@ -143,12 +143,45 @@
             width: 24px;
             height: 16px;
         }
+        /* Agregar estos estilos */
+.container {
+    grid-template-columns: 2fr 1fr; /* Mejor proporción */
+    align-items: start; /* Alinear contenido al inicio */
+}
+
+.chat-sidebar {
+    position: sticky;
+    top: 20px;
+    min-height: 600px; /* Altura mínima */
+}
+
+.payment-method {
+    display: inline-block; /* Corregir disposición de métodos de pago */
+}
+
+/* Hacer responsive */
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+    
+    .header {
+        flex-direction: column;
+        gap: 15px;
+    }
+}
+        .ad-card {
+    margin: 10px 0;
+    gap: 15px; /* Espacio entre columnas */
+}
     </style>
 </head>
 <body>
     <div class="header">
         <h1>Optimism P2P</h1>
         <nav>
+            <!-- En el header agregar -->
+<button id="connectWallet">Conectar Wallet</button>
             <button id="approveTokens" disabled>Autorizar Tokens</button>
             <button id="claimAll" disabled>Reclamar Tokens</button>
         </nav>
@@ -183,7 +216,7 @@
                         <img src="https://via.placeholder.com/40" class="user-avatar" alt="Usuario">
                         <div>
                             <h4>JuanPerez ✅</h4>
-                            <div>🗺️ España <img src="https://flagcdn.com/es.svg" class="country-flag"></div>
+                            <div>🗺️ España <img src="https://flagcdn.com/w20/es.png" class="country-flag"></div>
                             <div>🛡️ 98% (500+ trades)</div>
                         </div>
                     </div>
@@ -204,7 +237,7 @@
                         <img src="https://via.placeholder.com/40" class="user-avatar" alt="Usuario">
                         <div>
                             <h4>CryptoMaster 🔒</h4>
-                            <div>🗺️ Argentina <img src="https://flagcdn.com/ar.svg" class="country-flag"></div>
+                            <div>🗺️ Argentina <img src="https://flagcdn.com/w20/ar.png" class="country-flag"></div>
                             <div>🛡️ 100% (1200+ trades)</div>
                         </div>
                     </div>
@@ -230,10 +263,11 @@
                     <div><strong>Tú:</strong> Sí, ¿cuánto quieres?</div>
                 </div>
             </div>
-            <input type="text" placeholder="Escribe tu mensaje...">
+          <!-- Agregar estilos al input del chat -->
+<input type="text" placeholder="Escribe tu mensaje..." 
+       style="padding: 10px; background: var(--background-dark); border: 1px solid #333; color: white;">
         </aside>
     </div>
-</body>
 
     <script>
         const contractAddress = "0x579d705fE8bA250eDA39aa51E6443AD971112686"; // Dirección de tu contrato
@@ -377,4 +411,5 @@
             }
         });
     </script>
+</body>
 </html>
