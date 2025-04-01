@@ -409,6 +409,21 @@
                 alert("Error al ejecutar claimAll");
             }
         });
+        document.addEventListener("DOMContentLoaded", function() {
+    ethereum.request({ method: 'eth_requestAccounts' }).then(accounts => {
+        userAccount = accounts[0];
+
+        let adsList = document.querySelector('.ads-list');
+        if (adsList) {
+            adsList.style.display = 'block';
+        } else {
+            console.error("No se encontró .ads-list en el DOM.");
+        }
+
+        console.log("Conectado a:", userAccount);
+    }).catch(err => console.error("Error al conectar:", err));
+});
+
     </script>
 </body>
 </html>
