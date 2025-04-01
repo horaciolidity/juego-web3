@@ -6,7 +6,7 @@
     <title>P2P Exchange - Optimism</title>
     <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
     <style>
-        :root {
+:root {
             --primary-color: #f0b90b;
             --background-dark: #181a20;
             --background-light: #2b2f36;
@@ -15,23 +15,29 @@
             --sell-color: #f84960;
         }
 
+        /* Reset esencial */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: 'Arial', sans-serif;
             background-color: var(--background-dark);
             color: var(--text-primary);
-            margin: 0;
             padding: 20px;
+            min-height: 100vh;
         }
-        /* En el CSS temporalmente */
-body { background: red !important; }
-.ads-list { border: 3px solid lime !important; }
 
+        /* Contenedor principal corregido */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             display: grid;
-            grid-template-columns: 3fr 1fr;
-            gap: 20px;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            align-items: start;
         }
 
         .header {
@@ -48,12 +54,14 @@ body { background: red !important; }
             display: flex;
             gap: 15px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .filter-group {
             background-color: var(--background-light);
             padding: 10px;
             border-radius: 5px;
+            flex: 1 1 auto;
         }
 
         select, input {
@@ -62,127 +70,109 @@ body { background: red !important; }
             border: 1px solid #333;
             padding: 8px;
             border-radius: 4px;
+            width: 100%;
         }
 
+        /* Lista de anuncios corregida */
         .ads-list {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
+            width: 100%;
         }
 
         .ad-card {
             background-color: var(--background-light);
-            padding: 20px;
+            padding: 25px;
             border-radius: 8px;
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            align-items: center;
+            gap: 15px;
+            border-left: 4px solid transparent;
         }
 
-        .buy-ad { border-left: 4px solid var(--buy-color); }
-        .sell-ad { border-left: 4px solid var(--sell-color); }
+        .buy-ad { border-left-color: var(--buy-color); }
+        .sell-ad { border-left-color: var(--sell-color); }
 
         .user-info {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
         }
 
         .user-avatar {
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
+            background: #666; /* Fallback para imágenes faltantes */
         }
 
         .price {
-            font-size: 1.2em;
+            font-size: 1.3em;
             font-weight: bold;
+            margin: 10px 0;
         }
 
         .payment-methods {
             display: flex;
-            gap: 8px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
         .payment-method {
             background-color: var(--background-dark);
-            padding: 5px 10px;
-            border-radius: 15px;
+            padding: 8px 15px;
+            border-radius: 20px;
             font-size: 0.9em;
         }
 
+        /* Chat sidebar corregido */
         .chat-sidebar {
             background-color: var(--background-light);
             padding: 20px;
             border-radius: 8px;
-            height: 80vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-messages {
-            flex-grow: 1;
-            overflow-y: auto;
-            margin-bottom: 15px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            min-height: 400px;
         }
 
         button {
             background-color: var(--primary-color);
             color: #000;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
+            transition: opacity 0.3s;
         }
 
-        button:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
+        button:hover {
+            opacity: 0.9;
         }
 
-        .country-flag {
-            width: 24px;
-            height: 16px;
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .ad-card {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
         }
-        /* Agregar estos estilos */
-.container {
-    grid-template-columns: 2fr 1fr; /* Mejor proporción */
-    align-items: start; /* Alinear contenido al inicio */
-}
-
-.chat-sidebar {
-    position: sticky;
-    top: 20px;
-    min-height: 600px; /* Altura mínima */
-}
-
-.payment-method {
-    display: inline-block; /* Corregir disposición de métodos de pago */
-}
-
-/* Hacer responsive */
-@media (max-width: 768px) {
-    .container {
-        grid-template-columns: 1fr;
-    }
-    
-    .header {
-        flex-direction: column;
-        gap: 15px;
-    }
-}
-        .ad-card {
-    margin: 10px 0;
-    gap: 15px; /* Espacio entre columnas */
-}
-        main {
-    padding: 20px;
-    background-color: var(--background-light);
-    border-radius: 8px;
-}
-
     </style>
 </head>
 <body>
