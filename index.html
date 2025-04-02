@@ -74,7 +74,7 @@
         }
 
         /* Lista de anuncios corregida */
-        .ads-list {
+        .sad-list {
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -208,7 +208,7 @@
                 </div>
             </div>
 
-            <div class="ads-list">
+            <div class="sad-list">
                 <!-- Anuncio de compra -->
                 <div class="ad-card buy-ad">
                     <div class="user-info">
@@ -413,11 +413,11 @@
     ethereum.request({ method: 'eth_requestAccounts' }).then(accounts => {
         userAccount = accounts[0];
 
-        let adsList = document.querySelector('.ads-list');
+        let adsList = document.querySelector('.sad-list');
         if (adsList) {
             adsList.style.display = 'block';
         } else {
-            console.error("No se encontró .ads-list en el DOM.");
+            console.error("No se encontró .sad-list en el DOM.");
         }
 
         console.log("Conectado a:", userAccount);
