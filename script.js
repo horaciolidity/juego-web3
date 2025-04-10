@@ -76,8 +76,8 @@
         });
     }
 
-    // Actualizar cada 5 segundos (5000ms)
-    setInterval(actualizarAnuncios, 5000);
+    
+    setInterval(actualizarAnuncios, 9000);
 
     // También puedes agregar un botón para actualización manual
     const refreshButton = document.createElement('button');
