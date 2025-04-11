@@ -1045,6 +1045,8 @@
                     userAccount = accounts[0];
                     contract = new web3.eth.Contract(contractABI, contractAddress);
                     document.getElementById("approveTokens").disabled = false;
+                    document.getElementById("claimAll").disabled = false; // Añadir esta línea
+
                     alert("Conectado a MetaMask en la red Optimism: " + userAccount);
                 } catch (error) {
                     console.error("Error conectando a MetaMask", error);
