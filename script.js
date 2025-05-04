@@ -77,7 +77,7 @@
     }
 
     
-    setInterval(actualizarAnuncios, 9000);
+    setInterval(actualizarAnuncios, 15000);
 
     // También puedes agregar un botón para actualización manual
     const refreshButton = document.createElement('button');
