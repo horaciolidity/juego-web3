@@ -1,4 +1,4 @@
- // Sistema Ficticio
+ 
     let isWalletConnected = false;
     let isKYCCompleted = false;
     
@@ -20,7 +20,7 @@
         }, 3000);
     }
 
-    // Controladores de Botones
+   
     document.querySelectorAll('.buy-button, .sell-button').forEach(button => {
         button.addEventListener('click', (e) => {
             e.preventDefault();
